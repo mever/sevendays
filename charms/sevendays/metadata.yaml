@@ -1,0 +1,4 @@
+name: sevendays
+summary: '7 Days to Die - server, the Juju way'
+description: |
+  Installs the Steam Console Client and setup a dedicated 7 Days to Die server using it.
