@@ -105,6 +105,12 @@ func steamHandler(w http.ResponseWriter, r *http.Request) {
 		case "install":
 			defaultInstaller.Install(steam.AppIdFromString(r.Form.Get("appId")))
 
+		case "remove":
+			c := cmd.Client{}
+			if app := c.GetApp(sevendaystodie.AppId); app != nil {
+				app.Remove()
+			}
+
 		case "answer":
 			defaultInstaller.Answers <- r.Form.Get("answer")
 			<-defaultInstaller.Questions
