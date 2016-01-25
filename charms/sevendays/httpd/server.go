@@ -1,12 +1,12 @@
 package httpd
 
 import (
-	"net/http"
 	"golang.org/x/net/context"
+	"net/http"
 )
 
-type State struct{
-	User string
+type State struct {
+	User     string
 	Password string
 }
 

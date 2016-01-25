@@ -1,12 +1,12 @@
 package sevendays
 
 import (
-	"github.com/juju/gocharm/hook"
 	"fmt"
+	"github.com/juju/gocharm/hook"
 	"github.com/mever/sevendaystodie/charms/sevendays/httpd"
 )
 
-type RpcServer struct{
+type RpcServer struct {
 	cmd hook.Command
 }
 

@@ -2,13 +2,13 @@ package httpd
 
 import (
 	"fmt"
-	"net/http"
-	"text/template"
+	"github.com/juju/errors"
+	"github.com/mever/sevendaystodie"
 	"github.com/mever/steam"
 	"github.com/mever/steam/cmd"
-	"github.com/mever/sevendaystodie"
+	"net/http"
 	"sync"
-	"github.com/juju/errors"
+	"text/template"
 )
 
 var (
@@ -19,18 +19,18 @@ func init() {
 	cmd.AddQuestion("Steam Guard code:", "What is your Steam Guard code?", true)
 }
 
-type question struct{
+type question struct {
 	Sensitive bool
-	Value string
+	Value     string
 }
 
-type Installer struct{
+type Installer struct {
 	mu          sync.Mutex
 	installing  bool
-	interviewer steam.Interviewer
+	interviewer cmd.Interviewer
 
-	Questions   chan *question
-	Answers     chan string
+	Questions chan *question
+	Answers   chan string
 }
 
 func (i *Installer) Installing() bool {
@@ -42,7 +42,7 @@ func (i *Installer) Installing() bool {
 func (i *Installer) Install(appId steam.AppId) error {
 	i.mu.Lock()
 	installing := i.installing
-	if ! installing {
+	if !installing {
 		i.installing = true
 	}
 	i.mu.Unlock()
@@ -64,7 +64,7 @@ func (i *Installer) Install(appId steam.AppId) error {
 		} else {
 			i.Questions <- &question{Value: q, Sensitive: sensitive}
 		}
-		return <- i.Answers
+		return <-i.Answers
 	}
 
 	c := cmd.Client{}
@@ -90,24 +90,24 @@ func NewInstaller() *Installer {
 
 var defaultInstaller = NewInstaller()
 
-type SteamApp struct{
-	AppId steam.AppId
-	Name string
-	Status string
-	Action string
+type SteamApp struct {
+	AppId    steam.AppId
+	Name     string
+	Status   string
+	Action   string
 	Question *question
 }
 
 func steamHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "POST" {
 		r.ParseForm()
-		switch (r.Form.Get("action")) {
+		switch r.Form.Get("action") {
 		case "install":
 			defaultInstaller.Install(steam.AppIdFromString(r.Form.Get("appId")))
 
 		case "answer":
 			defaultInstaller.Answers <- r.Form.Get("answer")
-			<- defaultInstaller.Questions
+			<-defaultInstaller.Questions
 		}
 
 		w.Header().Set("Location", r.URL.String())
@@ -131,7 +131,7 @@ func steamHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if len(defaultInstaller.Questions) > 0 {
-		app.Question = <- defaultInstaller.Questions
+		app.Question = <-defaultInstaller.Questions
 		defaultInstaller.Questions <- app.Question
 		refresh = false
 	}
@@ -143,10 +143,10 @@ func steamHandler(w http.ResponseWriter, r *http.Request) {
 
 		data := struct {
 			Refresh bool
-			Apps []SteamApp
+			Apps    []SteamApp
 		}{
 			Refresh: refresh,
-			Apps: []SteamApp{app},
+			Apps:    []SteamApp{app},
 		}
 
 		if err := t.Execute(w, data); err != nil {

@@ -3,11 +3,11 @@ package sevendays
 import (
 	"github.com/juju/gocharm/charmbits/service"
 	"github.com/juju/gocharm/hook"
-	"gopkg.in/juju/charm.v5"
 	"github.com/mever/sevendaystodie/charms/sevendays/httpd"
+	"gopkg.in/juju/charm.v5"
 )
 
-type Charm struct{
+type Charm struct {
 	svc service.Service
 	ctx *hook.Context
 }
