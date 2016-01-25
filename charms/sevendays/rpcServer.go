@@ -3,17 +3,15 @@ package sevendays
 import (
 	"github.com/juju/gocharm/hook"
 	"fmt"
+	"github.com/mever/sevendaystodie/charms/sevendays/httpd"
 )
 
 type RpcServer struct{
 	cmd hook.Command
 }
 
-//type ServerState struct{}
-//type Feedback struct{}
-
-func (rpc *RpcServer) SetMessage(p string, response *string) error {
-	*response = p + " pong"
-	fmt.Println("Rpc server received: " + p)
+func (rpc *RpcServer) Set(s httpd.State, response *string) error {
+	*response = s.User + " pong"
+	fmt.Println(s)
 	return nil
 }

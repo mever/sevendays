@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Steam Manager</title>
+</head>
+<body>
+{{if .Refresh}}
+    <script type="text/javascript">setTimeout(function() {window.location.reload();}, 4000);</script>
+{{end}}
+<h3>Steam apps</h3>
+<table>
+    <thead><tr><td>Name</td><td>Status</td><td>Action(s)</td></tr></thead>
+    <tbody>
+    {{range .Apps}}<tr>
+        <td>{{ .Name }}</td><td>{{ .Status }}</td>
+
+        <td>
+        <form action="/steam" method="post">
+        <input type="hidden" name="appId" value="{{ .AppId }}">
+        {{if .Question}}
+            {{.Question.Value}}
+            {{if .Question.Sensitive}}
+                <input type="password" name="answer" value="">
+            {{else}}
+                <input type="text" name="answer" value="">
+            {{end}}
+            <input type="hidden" name="action" value="answer">
+            <input type="submit" value="answer">
+        {{else if .Action}}
+            <input type="hidden" name="action" value="{{ .Action }}">
+            <input type="submit" value="{{ .Action }}">
+        {{end}}
+        </form>
+        </td>
+    </tr>{{end}}
+    </tbody>
+</table>
+</body>
+</html>
