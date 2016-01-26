@@ -2,100 +2,25 @@ package httpd
 
 import (
 	"fmt"
-	"github.com/juju/errors"
 	"github.com/mever/sevendaystodie"
 	"github.com/mever/steam"
 	"github.com/mever/steam/cmd"
 	"net/http"
-	"sync"
 	"text/template"
 )
 
-var (
-	ErrAlreadyInstalling = errors.New("We're aleady installing")
-)
+var installer = &cmd.Installer{}
 
 func init() {
 	cmd.AddQuestion("Steam Guard code:", "What is your Steam Guard code?", true)
 }
-
-type question struct {
-	Sensitive bool
-	Value     string
-}
-
-type Installer struct {
-	mu          sync.Mutex
-	installing  bool
-	interviewer cmd.Interviewer
-
-	Questions chan *question
-	Answers   chan string
-}
-
-func (i *Installer) Installing() bool {
-	i.mu.Lock()
-	defer i.mu.Unlock()
-	return i.installing
-}
-
-func (i *Installer) Install(appId steam.AppId) error {
-	i.mu.Lock()
-	installing := i.installing
-	if !installing {
-		i.installing = true
-	}
-	i.mu.Unlock()
-	if installing {
-		return ErrAlreadyInstalling
-	}
-
-	i.Questions = make(chan *question, 1)
-	i.Answers = make(chan string)
-	i.interviewer = func(q string, sensitive bool) string {
-		if q == "" {
-			fmt.Println("No further questions...")
-			close(i.Questions)
-			close(i.Answers)
-			i.mu.Lock()
-			i.installing = false
-			i.mu.Unlock()
-			return ""
-		} else {
-			i.Questions <- &question{Value: q, Sensitive: sensitive}
-		}
-		return <-i.Answers
-	}
-
-	c := cmd.Client{}
-	go func() {
-
-		// TODO: move into Steam CMD, not all apps require authentication
-		c.AuthUser = i.interviewer("What is your Steam username?", false)
-		c.AuthPw = i.interviewer("What is your Steam password?", true)
-
-		err := c.InstallApp(appId, i.interviewer)
-		if err != nil {
-			fmt.Println(err)
-		}
-	}()
-
-	return nil
-}
-
-func NewInstaller() *Installer {
-	i := Installer{}
-	return &i
-}
-
-var defaultInstaller = NewInstaller()
 
 type SteamApp struct {
 	AppId    steam.AppId
 	Name     string
 	Status   string
 	Action   string
-	Question *question
+	Question *cmd.Question
 }
 
 func steamHandler(w http.ResponseWriter, r *http.Request) {
@@ -103,7 +28,7 @@ func steamHandler(w http.ResponseWriter, r *http.Request) {
 		r.ParseForm()
 		switch r.Form.Get("action") {
 		case "install":
-			defaultInstaller.Install(steam.AppIdFromString(r.Form.Get("appId")))
+			installer.Install(steam.AppIdFromString(r.Form.Get("appId")))
 
 		case "remove":
 			c := cmd.Client{}
@@ -112,8 +37,8 @@ func steamHandler(w http.ResponseWriter, r *http.Request) {
 			}
 
 		case "answer":
-			defaultInstaller.Answers <- r.Form.Get("answer")
-			<-defaultInstaller.Questions
+			installer.Answers <- r.Form.Get("answer")
+			<-installer.Questions
 		}
 
 		w.Header().Set("Location", r.URL.String())
@@ -122,7 +47,7 @@ func steamHandler(w http.ResponseWriter, r *http.Request) {
 
 	refresh := false
 	app := SteamApp{AppId: sevendaystodie.AppId, Name: "7 days to die"}
-	if defaultInstaller.Installing() {
+	if installer.Installing() {
 		app.Status = "installing..."
 		refresh = true
 	} else {
@@ -136,9 +61,9 @@ func steamHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	if len(defaultInstaller.Questions) > 0 {
-		app.Question = <-defaultInstaller.Questions
-		defaultInstaller.Questions <- app.Question
+	if len(installer.Questions) > 0 {
+		app.Question = <-installer.Questions
+		installer.Questions <- app.Question
 		refresh = false
 	}
 

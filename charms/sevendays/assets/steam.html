@@ -19,7 +19,7 @@
         <form action="/steam" method="post">
         <input type="hidden" name="appId" value="{{ .AppId }}">
         {{if .Question}}
-            {{.Question.Value}}
+            {{.Question.Message}}
             {{if .Question.Sensitive}}
                 <input type="password" name="answer" value="">
             {{else}}
