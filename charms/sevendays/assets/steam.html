@@ -8,18 +8,19 @@
 {{if .Refresh}}
     <script type="text/javascript">setTimeout(function() {window.location.reload();}, 4000);</script>
 {{end}}
-<h3>Steam apps</h3>
-<table>
-    <thead><tr><td>Name</td><td>Status</td><td>Action(s)</td></tr></thead>
-    <tbody>
-    {{range .Apps}}<tr>
-        <td>{{ .Name }}</td><td>{{ .Status }}</td>
+<h3>Steam: 7 Days to Die</h3>
 
+<form action="/steam" method="post">
+<table>
+    <tbody>
+    <tr>
+        <td>Status</td>
+        <td>{{ .Status }}</td>
+    </tr>
+    {{if .Question}}
+    <tr>
+        <td>{{.Question.Message}}</td>
         <td>
-        <form action="/steam" method="post">
-        <input type="hidden" name="appId" value="{{ .AppId }}">
-        {{if .Question}}
-            {{.Question.Message}}
             {{if .Question.Sensitive}}
                 <input type="password" name="answer" value="">
             {{else}}
@@ -27,14 +28,19 @@
             {{end}}
             <input type="hidden" name="action" value="answer">
             <input type="submit" value="answer">
-        {{else if .Action}}
-            <input type="hidden" name="action" value="{{ .Action }}">
-            <input type="submit" value="{{ .Action }}">
-        {{end}}
-        </form>
         </td>
-    </tr>{{end}}
+    </tr>
+    {{else if .Action}}
+    <tr>
+        <td>Action(s)</td>
+        <td><input type="hidden" name="action" value="{{ .Action }}">
+            <input type="submit" value="{{ .Action }}">
+        </td>
+    </tr>
+    {{end}}
     </tbody>
 </table>
+</form>
+
 </body>
 </html>

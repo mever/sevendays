@@ -3,7 +3,6 @@ package httpd
 import (
 	"fmt"
 	"github.com/mever/sevendaystodie"
-	"github.com/mever/steam"
 	"github.com/mever/steam/cmd"
 	"net/http"
 	"text/template"
@@ -15,8 +14,8 @@ func init() {
 	cmd.AddQuestion("Steam Guard code:", "What is your Steam Guard code?", true)
 }
 
-type SteamApp struct {
-	AppId    steam.AppId
+type page struct {
+	Refresh  bool
 	Name     string
 	Status   string
 	Action   string
@@ -28,7 +27,7 @@ func steamHandler(w http.ResponseWriter, r *http.Request) {
 		r.ParseForm()
 		switch r.Form.Get("action") {
 		case "install":
-			installer.Install(steam.AppIdFromString(r.Form.Get("appId")))
+			installer.Install(sevendaystodie.AppId)
 
 		case "remove":
 			c := cmd.Client{}
@@ -45,26 +44,25 @@ func steamHandler(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusSeeOther)
 	}
 
-	refresh := false
-	app := SteamApp{AppId: sevendaystodie.AppId, Name: "7 days to die"}
+	pageData := page{}
 	if installer.Installing() {
-		app.Status = "installing..."
-		refresh = true
+		pageData.Status = "installing..."
+		pageData.Refresh = true
 	} else {
 		c := cmd.Client{}
 		if nil == c.GetApp(sevendaystodie.AppId) {
-			app.Status = "not installed"
-			app.Action = "install"
+			pageData.Status = "not installed"
+			pageData.Action = "install"
 		} else {
-			app.Status = "installed"
-			app.Action = "remove"
+			pageData.Status = "installed"
+			pageData.Action = "remove"
 		}
 	}
 
 	if len(installer.Questions) > 0 {
-		app.Question = <-installer.Questions
-		installer.Questions <- app.Question
-		refresh = false
+		pageData.Question = <-installer.Questions
+		installer.Questions <- pageData.Question
+		pageData.Refresh = false
 	}
 
 	t, err := template.New("steam.html").ParseFiles(AssetsDir + "/steam.html")
@@ -72,15 +70,7 @@ func steamHandler(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(fmt.Sprintln(err)))
 	} else {
 
-		data := struct {
-			Refresh bool
-			Apps    []SteamApp
-		}{
-			Refresh: refresh,
-			Apps:    []SteamApp{app},
-		}
-
-		if err := t.Execute(w, data); err != nil {
+		if err := t.Execute(w, pageData); err != nil {
 			w.Write([]byte(fmt.Sprintln(err)))
 		}
 	}
