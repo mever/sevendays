@@ -3,7 +3,7 @@ package sevendays
 import (
 	"github.com/juju/gocharm/charmbits/service"
 	"github.com/juju/gocharm/hook"
-	"github.com/mever/sevendaystodie/charms/sevendays/httpd"
+	"github.com/mever/sevendaystodie/httpd"
 	"golang.org/x/net/context"
 	"gopkg.in/errgo.v1"
 	"sync"

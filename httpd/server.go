@@ -1,6 +1,7 @@
 package httpd
 
 import (
+	"github.com/mever/sevendaystodie/httpd/steam"
 	"golang.org/x/net/context"
 	"net/http"
 )
@@ -13,7 +14,7 @@ type State struct {
 var AssetsDir string
 
 func Serve(ctx context.Context) error {
+	steam.Setup(AssetsDir)
 	http.HandleFunc("/", indexHandler)
-	http.HandleFunc("/steam", steamHandler)
 	return http.ListenAndServe(":80", nil)
 }

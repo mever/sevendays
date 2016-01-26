@@ -1,4 +1,4 @@
-package httpd
+package steam
 
 import (
 	"fmt"
@@ -9,9 +9,12 @@ import (
 )
 
 var installer = &cmd.Installer{}
+var assetsDir string
 
-func init() {
+func Setup(assets string) {
+	assetsDir = assets
 	cmd.AddQuestion("Steam Guard code:", "What is your Steam Guard code?", true)
+	http.HandleFunc("/steam", steamHandler)
 }
 
 type page struct {
@@ -65,7 +68,7 @@ func steamHandler(w http.ResponseWriter, r *http.Request) {
 		pageData.Refresh = false
 	}
 
-	t, err := template.New("steam.html").ParseFiles(AssetsDir + "/steam.html")
+	t, err := template.New("steam.html").ParseFiles(assetsDir + "/steam.html")
 	if err != nil {
 		w.Write([]byte(fmt.Sprintln(err)))
 	} else {

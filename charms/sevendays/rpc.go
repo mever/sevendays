@@ -3,7 +3,7 @@ package sevendays
 import (
 	"fmt"
 	"github.com/juju/gocharm/hook"
-	"github.com/mever/sevendaystodie/charms/sevendays/httpd"
+	"github.com/mever/sevendaystodie/httpd"
 )
 
 type RpcServer struct {
