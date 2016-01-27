@@ -2,7 +2,7 @@ package steam
 
 import (
 	"fmt"
-	"github.com/mever/sevendaystodie"
+	"github.com/mever/sevendays"
 	"github.com/mever/steam/cmd"
 	"net/http"
 	"text/template"
@@ -30,11 +30,11 @@ func steamHandler(w http.ResponseWriter, r *http.Request) {
 		r.ParseForm()
 		switch r.Form.Get("action") {
 		case "install":
-			installer.Install(sevendaystodie.AppId)
+			installer.Install(sevendays.AppId)
 
 		case "remove":
 			c := cmd.Client{}
-			if app := c.GetApp(sevendaystodie.AppId); app != nil {
+			if app := c.GetApp(sevendays.AppId); app != nil {
 				app.Remove()
 			}
 
@@ -53,7 +53,7 @@ func steamHandler(w http.ResponseWriter, r *http.Request) {
 		pageData.Refresh = true
 	} else {
 		c := cmd.Client{}
-		if nil == c.GetApp(sevendaystodie.AppId) {
+		if nil == c.GetApp(sevendays.AppId) {
 			pageData.Status = "not installed"
 			pageData.Action = "install"
 		} else {

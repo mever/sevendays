@@ -1,4 +1,4 @@
-package sevendaystodie
+package sevendays
 
 import (
 	"github.com/mever/steam"

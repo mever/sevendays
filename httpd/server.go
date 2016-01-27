@@ -1,7 +1,7 @@
 package httpd
 
 import (
-	"github.com/mever/sevendaystodie/httpd/steam"
+	"github.com/mever/sevendays/httpd/steam"
 	"golang.org/x/net/context"
 	"net/http"
 )

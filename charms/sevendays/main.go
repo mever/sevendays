@@ -3,7 +3,7 @@ package sevendays
 import (
 	"github.com/juju/gocharm/charmbits/service"
 	"github.com/juju/gocharm/hook"
-	"github.com/mever/sevendaystodie/httpd"
+	"github.com/mever/sevendays/httpd"
 	"gopkg.in/juju/charm.v5"
 )
 
