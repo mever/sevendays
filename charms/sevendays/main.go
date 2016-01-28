@@ -32,6 +32,12 @@ func (c *Charm) start() error {
 }
 
 func (c *Charm) configChanged() error {
+	if !c.svc.Started() {
+		if err := c.start(); err != nil {
+			return err
+		}
+	}
+
 	user, _ := c.ctx.GetConfigString("user")
 	ss := httpd.State{
 		User: user,
